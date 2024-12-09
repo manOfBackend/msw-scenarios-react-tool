@@ -57,7 +57,7 @@ export const MockManager = ({
               status.method === handler._method && status.path === handler._path
           )?.currentPreset || 'real-api',
       })),
-    [handlers.handlers, mockingStatus]
+    [mockingStatus, handlers]
   )
 
   const activePresetsCount = mockingStatus.length
