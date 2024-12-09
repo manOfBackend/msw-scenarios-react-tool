@@ -1,61 +1,82 @@
-import React, { useState } from 'react'
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQueries,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react'
 import type { ExtendedHandlers, PresetHandler } from 'msw-scenarios'
 import { Button } from './ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card'
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  },
+})
+
+interface TestEndpoint {
+  method: string
+  path: string
+  presets: string[]
+  description: string
+}
+
+interface EndpointResponse {
+  success: boolean
+  data: any
+  status: number
+}
+
 interface MSWTestDashboardProps {
   handlers: ExtendedHandlers<PresetHandler[]>
 }
 
-const MSWTestDashboard = ({ handlers }: MSWTestDashboardProps) => {
-  const [results, setResults] = useState<Record<string, any>>({})
-  const [loading, setLoading] = useState<Record<string, boolean>>({})
+const TestDashboardContent = ({ handlers }: MSWTestDashboardProps) => {
+  const queryClient = useQueryClient()
 
-  // Extract test endpoints from handlers
-  const testEndpoints = handlers.handlers.map((handler) => ({
+  const testEndpoints: TestEndpoint[] = handlers.handlers.map((handler) => ({
     method: handler._method.toUpperCase(),
     path: handler._path,
     presets: handler._presets.map((preset) => preset.label),
     description: `${handler._method.toUpperCase()} ${handler._path}`,
   }))
 
-  const testEndpoint = async (method: string, path: string) => {
-    const key = `${method}-${path}`
-    setLoading((prev) => ({ ...prev, [key]: true }))
+  const endpointQueries = useQueries({
+    queries: testEndpoints.map((endpoint) => ({
+      queryKey: ['endpoint', endpoint.method, endpoint.path],
+      queryFn: async (): Promise<EndpointResponse> => {
+        try {
+          const response = await fetch(endpoint.path, {
+            method: endpoint.method,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          })
+          const data = await response.json()
+          return {
+            success: true,
+            data,
+            status: response.status,
+          }
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : 'Unknown error'
+          throw new Error(errorMessage)
+        }
+      },
+    })),
+  })
 
-    try {
-      const response = await fetch(path, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+  const refetchAll = () => {
+    testEndpoints.forEach(({ method, path }) => {
+      queryClient.invalidateQueries({
+        queryKey: ['endpoint', method, path],
       })
-      const data = await response.json()
-
-      setResults((prev) => ({
-        ...prev,
-        [key]: {
-          success: true,
-          data,
-          status: response.status,
-        },
-      }))
-    } catch (error) {
-      setResults((prev) => ({
-        ...prev,
-        [key]: {
-          success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        },
-      }))
-    }
-
-    setLoading((prev) => ({ ...prev, [key]: false }))
-  }
-
-  const testAll = () => {
-    testEndpoints.forEach(({ method, path }) => testEndpoint(method, path))
+    })
   }
 
   return (
@@ -65,7 +86,7 @@ const MSWTestDashboard = ({ handlers }: MSWTestDashboardProps) => {
           <CardTitle className='flex items-center justify-between'>
             <span>MSW Test Dashboard</span>
             <Button
-              onClick={testAll}
+              onClick={refetchAll}
               className='flex items-center gap-2'
               variant='outline'
             >
@@ -80,12 +101,12 @@ const MSWTestDashboard = ({ handlers }: MSWTestDashboardProps) => {
               No handlers provided
             </div>
           ) : (
-            testEndpoints.map(({ method, path, presets }) => {
-              const key = `${method}-${path}`
-              const result = results[key]
+            testEndpoints.map((endpoint, index) => {
+              const query = endpointQueries[index]
+              const { method, path, presets } = endpoint
 
               return (
-                <Card key={key} className='p-4'>
+                <Card key={`${method}-${path}`} className='p-4'>
                   <div className='space-y-4'>
                     <div className='flex items-center justify-between'>
                       <div className='space-y-1'>
@@ -99,11 +120,11 @@ const MSWTestDashboard = ({ handlers }: MSWTestDashboardProps) => {
                         )}
                       </div>
                       <Button
-                        onClick={() => testEndpoint(method, path)}
-                        disabled={loading[key]}
+                        onClick={() => query.refetch()}
+                        disabled={query.isFetching}
                         size='sm'
                       >
-                        {loading[key] ? (
+                        {query.isFetching ? (
                           <RefreshCw className='h-4 w-4 animate-spin' />
                         ) : (
                           'Test'
@@ -111,28 +132,42 @@ const MSWTestDashboard = ({ handlers }: MSWTestDashboardProps) => {
                       </Button>
                     </div>
 
-                    {result && (
+                    {query.data && (
                       <div
                         className={`rounded-md p-3 ${
-                          result.success
+                          query.data.success
                             ? 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300'
                             : 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300'
                         }`}
                       >
                         <div className='flex items-center gap-2'>
-                          {result.success ? (
+                          {query.data.success ? (
                             <CheckCircle2 className='h-4 w-4' />
                           ) : (
                             <AlertCircle className='h-4 w-4' />
                           )}
                           <span className='font-medium'>
-                            {result.success
-                              ? `Success (${result.status})`
+                            {query.data.success
+                              ? `Success (${query.data.status})`
                               : 'Error'}
                           </span>
                         </div>
                         <pre className='mt-2 overflow-x-auto text-sm'>
-                          {JSON.stringify(result.data || result.error, null, 2)}
+                          {JSON.stringify(query.data.data, null, 2)}
+                        </pre>
+                      </div>
+                    )}
+
+                    {query.error && (
+                      <div className='rounded-md bg-red-50 p-3 text-red-700 dark:bg-red-950 dark:text-red-300'>
+                        <div className='flex items-center gap-2'>
+                          <AlertCircle className='h-4 w-4' />
+                          <span className='font-medium'>Error</span>
+                        </div>
+                        <pre className='mt-2 overflow-x-auto text-sm'>
+                          {query.error instanceof Error
+                            ? query.error.message
+                            : 'Unknown error'}
                         </pre>
                       </div>
                     )}
@@ -144,6 +179,14 @@ const MSWTestDashboard = ({ handlers }: MSWTestDashboardProps) => {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+const MSWTestDashboard = (props: MSWTestDashboardProps) => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TestDashboardContent {...props} />
+    </QueryClientProvider>
   )
 }
 
