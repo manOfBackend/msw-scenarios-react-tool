@@ -1,18 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { Settings, X } from 'lucide-react'
 import { useMockStore } from '@/store/mockStore'
-import type {
-  ExtendedHandlers,
-  PresetHandler,
-  MockProfileManager,
-} from 'msw-scenarios'
+import { Settings, X } from 'lucide-react'
+import React, { useEffect, useMemo, useState } from 'react'
 import * as S from './styles'
-
-export interface MockManagerProps {
-  handlers: ExtendedHandlers<PresetHandler[]>
-  profiles: MockProfileManager<any>
-  className?: string
-}
+import { MockManagerProps } from './types'
 
 export const MockManager: React.FC<MockManagerProps> = ({
   handlers,

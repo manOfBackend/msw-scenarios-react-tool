@@ -26,7 +26,10 @@
       "@/*": ["./src/*"]
     },
     "jsxImportSource": "@emotion/react",
-    "types": ["@emotion/react/types/css-prop", "node"]
+    "types": ["@emotion/react/types/css-prop", "node"],
+    "declaration": true,
+    "declarationDir": "dist",
+    "emitDeclarationOnly": true
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
