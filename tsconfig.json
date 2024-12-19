@@ -5,31 +5,22 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-
-    /* Bundler mode */
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
+    "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-
-    /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-
-    /* Path Aliases */
+    "declaration": true,
+    "declarationDir": "dist",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    },
-    "jsxImportSource": "@emotion/react",
-    "types": ["@emotion/react/types/css-prop", "node"],
-    "declaration": true,
-    "declarationDir": "dist",
-    "emitDeclarationOnly": true
+    }
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

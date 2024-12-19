@@ -13,19 +13,10 @@ export default defineConfig({
     }),
     dts({
       include: ['src'],
-      beforeWriteFile: (filePath, content) => {
-        return {
-          filePath: filePath.replace('@/', ''),
-          content: content.replace(/@\//g, './'),
-        }
-      },
+      outDir: 'dist',
+      rollupTypes: true,
     }),
   ],
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, './src'),
-    },
-  },
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
@@ -38,7 +29,6 @@ export default defineConfig({
         'react-dom',
         '@emotion/react',
         '@emotion/styled',
-        'lucide-react',
         'msw',
         'msw-scenarios',
       ],
@@ -48,9 +38,13 @@ export default defineConfig({
           'react-dom': 'ReactDOM',
           '@emotion/react': 'emotionReact',
           '@emotion/styled': 'emotionStyled',
-          'lucide-react': 'lucideReact',
         },
       },
+    },
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
     },
   },
 })
