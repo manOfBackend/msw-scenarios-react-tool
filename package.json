@@ -1,31 +1,27 @@
 {
-  "name": "@msw-scenarios/react-ui",
+  "name": "msw-scenarios-react-devtools",
   "version": "0.0.1",
-  "description": "react devtools components for msw-scenarios",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "type": "module",
-  "sideEffects": false,
+  "description": "React UI components for msw-scenarios",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "files": [
-    "dist/**"
+    "dist"
   ],
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    },
-    "./styles.css": "./dist/style.css"
-  },
   "scripts": {
-    "dev": "vite",
     "build": "vite build && tsc",
-    "preview": "vite preview",
+    "prepublishOnly": "npm run build",
     "lint": "eslint src --ext .ts,.tsx --fix",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css,md}\"",
-    "type-check": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "format": "prettier --write \"src/**/*.{ts,tsx,css,md}\""
+  },
+  "peerDependencies": {
+    "@emotion/react": "^11.0.0",
+    "@emotion/styled": "^11.0.0",
+    "lucide-react": "^0.0.0",
+    "msw": "^2.0.0",
+    "msw-scenarios": "^0.1.3",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   },
   "keywords": [
     "msw",
@@ -35,57 +31,14 @@
     "react",
     "ui"
   ],
-  "author": "",
-  "license": "ISC",
-  "peerDependencies": {
-    "msw": "^2.0.0",
-    "msw-scenarios": "^0.1.3",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "tailwindcss": "^3.0.0"
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/manOfBackend/msw-scenarios-react-tool"
   },
-  "dependencies": {
-    "@radix-ui/react-dialog": "^1.1.2",
-    "@radix-ui/react-select": "^2.1.2",
-    "@radix-ui/react-tabs": "^1.1.1",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.462.0",
-    "tailwind-merge": "^2.5.5",
-    "zustand": "^5.0.1"
+  "bugs": {
+    "url": "https://github.com/manOfBackend/msw-scenarios-react-tool/issues"
   },
-  "devDependencies": {
-    "@types/node": "^22.10.1",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@typescript-eslint/eslint-plugin": "^8.16.0",
-    "@typescript-eslint/parser": "^8.16.0",
-    "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.20",
-    "eslint": "^9.16.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.2.1",
-    "eslint-plugin-react": "^7.37.2",
-    "eslint-plugin-react-hooks": "^5.0.0",
-    "msw": "^2.6.6",
-    "msw-scenarios": "^0.1.7",
-    "postcss": "^8.4.49",
-    "prettier": "^3.4.1",
-    "prettier-plugin-tailwindcss": "^0.6.9",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "tailwindcss": "^3.4.15",
-    "tailwindcss-animate": "^1.0.7",
-    "typescript": "^5.7.2",
-    "vite": "^6.0.1",
-    "vite-plugin-dts": "^4.3.0"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "msw": {
-    "workerDirectory": [
-      "public"
-    ]
-  }
+  "homepage": "https://github.com/manOfBackend/msw-scenarios-react-tool#readme"
 }

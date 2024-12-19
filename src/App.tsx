@@ -1,14 +1,14 @@
 import { handlers, profiles } from '../mocks/handlers'
 import { MockManager } from './components/MockManager'
-import MSWTestDashboard from './components/MSWTestDashboard'
+import { ThemeProvider } from './styles/ThemeProvider'
 
 function App() {
   return (
-    <div className='min-h-screen bg-gray-50'>
+    <ThemeProvider>
       <MockManager handlers={handlers} profiles={profiles} />
-      <MSWTestDashboard handlers={handlers} />
-    </div>
+    </ThemeProvider>
   )
 }
 
 export default App
+// ;<MSWTestDashboard handlers={handlers} />

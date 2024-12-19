@@ -1,35 +1,27 @@
-import { Button } from '@/components/ui/Button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/Select'
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetTitle,
-} from '@/components/ui/Sheet'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Settings, X } from 'lucide-react'
 import { useMockStore } from '@/store/mockStore'
-import { Settings } from 'lucide-react'
-import type { ExtendedHandlers, PresetHandler } from 'msw-scenarios'
-import type { MockProfileManager } from 'msw-scenarios'
-import { useEffect, useMemo } from 'react'
+import type {
+  ExtendedHandlers,
+  PresetHandler,
+  MockProfileManager,
+} from 'msw-scenarios'
+import * as S from './styles'
 
-interface MockManagerProps {
+export interface MockManagerProps {
   handlers: ExtendedHandlers<PresetHandler[]>
   profiles: MockProfileManager<any>
   className?: string
 }
 
-export const MockManager = ({
+export const MockManager: React.FC<MockManagerProps> = ({
   handlers,
   profiles,
   className,
-}: MockManagerProps) => {
+}) => {
+  const [isOpen, setIsOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<'presets' | 'profiles'>('presets')
+
   const {
     mockingStatus,
     currentProfile,
@@ -64,152 +56,113 @@ export const MockManager = ({
   const availableProfiles = profiles.getAvailableProfiles()
 
   return (
-    <div className={`msw-preset-manager ${className}`}>
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button
-            variant='outline'
-            size='default'
-            className='fixed bottom-4 right-4 z-50 h-12 w-12 rounded-full bg-white shadow-lg hover:bg-gray-100'
-            aria-label='Open mock manager'
-          >
-            <Settings className='h-6 w-6' />
-            {activePresetsCount > 0 && (
-              <span
-                className='absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white'
-                aria-label={`${activePresetsCount} active mocks`}
-              >
-                {activePresetsCount}
-              </span>
-            )}
-          </Button>
-        </SheetTrigger>
-        <SheetContent
-          side='bottom'
-          className='flex h-[85vh] flex-col rounded-t-lg border-t border-border p-0 sm:h-[80vh]'
-        >
-          <SheetTitle className='sr-only'>설정</SheetTitle>
-          <div className='flex items-center justify-between border-b p-4 sm:p-6'>
-            <h1 className='text-xl font-bold sm:text-2xl'>Mock Manager</h1>
-            <span className='mr-10 text-sm text-muted-foreground'>
-              활성: {activePresetsCount}
-            </span>
-          </div>
+    <S.Container className={className}>
+      <S.FloatingButton onClick={() => setIsOpen(true)}>
+        <Settings size={24} />
+        {activePresetsCount > 0 && <S.Badge>{activePresetsCount}</S.Badge>}
+      </S.FloatingButton>
 
-          <div className='flex-1 overflow-y-auto'>
-            <div className='mx-auto max-w-3xl p-4 pt-0 sm:p-6 sm:pt-0'>
-              <Tabs defaultValue='presets' className='space-y-4'>
-                <TabsList className='sticky top-0 z-10 grid w-full grid-cols-2 bg-background'>
-                  <TabsTrigger value='presets'>프리셋</TabsTrigger>
-                  <TabsTrigger value='profiles'>프로파일</TabsTrigger>
-                </TabsList>
-                <TabsContent value='presets' className='mt-2 space-y-4'>
-                  {allHandlers.map(
-                    ({ method, path, presets, currentPreset }) => (
-                      <div
-                        key={`${method}-${path}`}
-                        className='flex flex-col space-y-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-4'
-                      >
-                        <div className='space-y-2 sm:space-y-0'>
-                          <div className='flex flex-wrap items-center gap-2'>
-                            <span className='rounded bg-secondary px-2 py-1 font-mono text-sm'>
-                              {method.toUpperCase()} {path}
-                            </span>
-                            {currentPreset !== 'real-api' && (
-                              <span className='text-sm font-medium text-green-600'>
-                                Active: {currentPreset}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className='flex flex-col gap-2 sm:flex-row'>
-                          <Select
-                            value={currentPreset}
-                            onValueChange={(value) =>
-                              setPreset(method, path, value)
-                            }
-                          >
-                            <SelectTrigger className='w-full sm:w-[180px]'>
-                              <SelectValue placeholder='Select preset' />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value='real-api'>
-                                Real API (Default)
-                              </SelectItem>
-                              {presets.map((preset) => (
-                                <SelectItem
-                                  key={preset.label}
-                                  value={preset.label}
-                                >
-                                  {preset.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <Button
-                            variant='outline'
-                            onClick={() => setPreset(method, path, 'real-api')}
-                            className='w-full sm:w-auto'
-                          >
-                            초기화
-                          </Button>
-                        </div>
-                      </div>
-                    )
-                  )}
+      <S.Overlay isOpen={isOpen} onClick={() => setIsOpen(false)} />
 
-                  {allHandlers.length > 0 && (
-                    <Button
-                      className='mt-4 w-full'
+      <S.Sheet isOpen={isOpen}>
+        <S.Header>
+          <S.Title>Mock Manager</S.Title>
+          <S.ActiveCount>활성: {activePresetsCount}</S.ActiveCount>
+          <S.CloseButton onClick={() => setIsOpen(false)}>
+            <X size={20} />
+          </S.CloseButton>
+        </S.Header>
+
+        <S.Content>
+          <S.TabList>
+            <S.Tab
+              active={activeTab === 'presets'}
+              onClick={() => setActiveTab('presets')}
+            >
+              프리셋
+            </S.Tab>
+            <S.Tab
+              active={activeTab === 'profiles'}
+              onClick={() => setActiveTab('profiles')}
+            >
+              프로파일
+            </S.Tab>
+          </S.TabList>
+
+          {activeTab === 'presets' && (
+            <S.Section>
+              {allHandlers.map(({ method, path, presets, currentPreset }) => (
+                <S.HandlerCard key={`${method}-${path}`}>
+                  <S.HandlerInfo>
+                    <div>
+                      <S.MethodPath>
+                        {method.toUpperCase()} {path}
+                      </S.MethodPath>
+                      {currentPreset !== 'real-api' && (
+                        <S.ActivePreset>Active: {currentPreset}</S.ActivePreset>
+                      )}
+                    </div>
+                  </S.HandlerInfo>
+                  <S.Controls>
+                    <S.Select
+                      value={currentPreset}
+                      onChange={(e) => setPreset(method, path, e.target.value)}
+                    >
+                      <option value='real-api'>Real API (Default)</option>
+                      {presets.map((preset) => (
+                        <option key={preset.label} value={preset.label}>
+                          {preset.label}
+                        </option>
+                      ))}
+                    </S.Select>
+                    <S.Button
                       variant='outline'
-                      onClick={reset}
+                      onClick={() => setPreset(method, path, 'real-api')}
                     >
-                      모두 초기화
-                    </Button>
-                  )}
-                </TabsContent>
-                <TabsContent value='profiles' className='mt-2'>
-                  <div className='space-y-4 rounded-lg border p-4'>
-                    <h2 className='text-sm font-medium text-muted-foreground'>
-                      Profiles
-                    </h2>
-                    <Select
-                      value={currentProfile || undefined}
-                      onValueChange={setProfile}
-                    >
-                      <SelectTrigger className='w-full'>
-                        <SelectValue placeholder='Select Profile' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {/* <SelectItem value='default'>
-                          Default (Real API)
-                        </SelectItem> */}
-                        {availableProfiles.map((profile) => (
-                          <SelectItem key={profile} value={profile}>
-                            {profile}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      초기화
+                    </S.Button>
+                  </S.Controls>
+                </S.HandlerCard>
+              ))}
 
-                    {currentProfile && (
-                      <div className='pt-2'>
-                        <Button
-                          variant='outline'
-                          onClick={() => setProfile('default')}
-                          className='w-full'
-                        >
-                          초기화
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
-    </div>
+              {allHandlers.length > 0 && (
+                <S.Button variant='outline' onClick={reset}>
+                  모두 초기화
+                </S.Button>
+              )}
+            </S.Section>
+          )}
+
+          {activeTab === 'profiles' && (
+            <S.ProfilesCard>
+              <S.ProfilesTitle>Profiles</S.ProfilesTitle>
+              <S.Select
+                value={currentProfile || ''}
+                onChange={(e) => setProfile(e.target.value)}
+              >
+                <option value='' disabled>
+                  Select Profile
+                </option>
+                {availableProfiles.map((profile) => (
+                  <option key={profile} value={profile}>
+                    {profile}
+                  </option>
+                ))}
+              </S.Select>
+
+              {currentProfile && (
+                <S.Button
+                  variant='outline'
+                  onClick={() => setProfile('default')}
+                  style={{ marginTop: '16px', width: '100%' }}
+                >
+                  초기화
+                </S.Button>
+              )}
+            </S.ProfilesCard>
+          )}
+        </S.Content>
+      </S.Sheet>
+    </S.Container>
   )
 }

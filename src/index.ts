@@ -1,2 +1,2 @@
-export { MSWPresetProvider, useMSWPreset } from './context'
-export { MSWPresetUI } from './components/PresetUI'
+export { MockManager } from './components/MockManager'
+export type { MockManagerProps } from './components/MockManager'
